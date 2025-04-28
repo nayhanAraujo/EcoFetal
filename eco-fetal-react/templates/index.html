@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de Z-Score para Ecocardiograma Fetal</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script
+    src="https://cdn.jsdelivr.net/npm/babel-standalone@6.26.0/babel.min.js"
+    data-presets="env,react">
+  </script>
+      <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div
+      id="root"
+      class="min-h-screen bg-gray-100 flex items-center justify-center"
+    ></div>
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      const ZScoreCalculator = () => {
+        // Estado para entradas do usuário
+        const [estrutura, setEstrutura] = useState("aortica");
+        const [medida, setMedida] = useState("");
+        const [idadeGestacional, setIdadeGestacional] = useState("");
+        const [resultado, setResultado] = useState(null);
+
+        // Função para calcular Z-Score com base em Schneider et al. (2005)
+        const calcularZScore = (estrutura, medida, idadeGestacional) => {
+          let media, desvioPadrao;
+
+          // Equações de Schneider et al.
+          switch (estrutura) {
+            case "aortica":
+              media = -2.263 + 0.219 * idadeGestacional;
+              desvioPadrao = 0.075 + 0.013 * idadeGestacional;
+              break;
+            case "mitral":
+              media = -3.123 + 0.287 * idadeGestacional;
+              desvioPadrao = 0.092 + 0.015 * idadeGestacional;
+              break;
+            case "ventriculoEsquerdo":
+              media = -2.745 + 0.347 * idadeGestacional;
+              desvioPadrao = 0.108 + 0.017 * idadeGestacional;
+              break;
+            default:
+              return null;
+          }
+
+          // Fórmula do Z-Score
+          const zScore = (medida - media) / desvioPadrao;
+
+          // Interpretação
+          let interpretacao = "Z-Score dentro do intervalo normal.";
+          if (Math.abs(zScore) > 2) {
+            interpretacao =
+              "Atenção: Z-Score fora do intervalo normal. Consulte um cardiologista fetal.";
+          }
+
+          return {
+            zScore: zScore.toFixed(2),
+            interpretacao,
+            media: media.toFixed(2),
+            desvioPadrao: desvioPadrao.toFixed(2),
+          };
+        };
+
+        // Função para lidar com o cálculo
+        const handleCalcular = () => {
+          if (
+            !medida ||
+            !idadeGestacional ||
+            idadeGestacional < 18 ||
+            idadeGestacional > 34
+          ) {
+            setResultado({
+              erro: "Por favor, insira valores válidos. Idade gestacional deve estar entre 18 e 34 semanas.",
+            });
+            return;
+          }
+
+          const resultado = calcularZScore(
+            estrutura,
+            parseFloat(medida),
+            parseFloat(idadeGestacional)
+          );
+          setResultado(resultado);
+        };
+
+        return (
+          <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold text-center mb-4">
+              Calculadora de Z-Score Fetal
+            </h1>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Estrutura Cardíaca
+              </label>
+              <select
+                value={estrutura}
+                onChange={(e) => setEstrutura(e.target.value)}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"  >
+                <option value="aortica">Válvula Aórtica</option>
+                <option value="mitral">Válvula Mitral</option>
+                <option value="ventriculoEsquerdo">Ventrículo Esquerdo</option>
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Medida Observada (mm)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={medida}
+                onChange={(e) => setMedida(e.target.value)}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Ex.: 4.5"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Idade Gestacional (semanas)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={idadeGestacional}
+                onChange={(e) => setIdadeGestacional(e.target.value)}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Ex.: 24"
+              />
+            </div>
+
+            <button
+              onClick={handleCalcular}
+              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+            >
+              Calcular Z-Score
+            </button>
+
+            {resultado && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                {resultado.erro ? (
+                  <p className="text-red-600">{resultado.erro}</p>
+                ) : (
+                  <>
+                    <p>
+                      <strong>Z-Score:</strong> {resultado.zScore}
+                    </p>
+                    <p>
+                      <strong>Interpretação:</strong> {resultado.interpretacao}
+                    </p>
+                    <p>
+                      <strong>Média Esperada:</strong> {resultado.media} mm
+                    </p>
+                    <p>
+                      <strong>Desvio Padrão:</strong> {resultado.desvioPadrao}{" "}
+                      mm
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+
+            <p className="mt-4 text-sm text-gray-600 text-center">
+              Esta ferramenta é informativa e não substitui a avaliação de um
+              médico. Baseado em Schneider et al. (2005).
+            </p>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<ZScoreCalculator />);
+          </script>
+  </body>
+</html>
