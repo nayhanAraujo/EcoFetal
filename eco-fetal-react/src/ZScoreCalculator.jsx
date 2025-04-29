@@ -10,6 +10,9 @@ export default function ZScoreCalculator() {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
 
+  // Lista de idades gestacionais para o dropdown
+  const idadesGestacionais = Array.from({ length: 17 }, (_, i) => 18 + i);
+
   const calcularZScore = (estrutura, medida, ig, femur) => {
     let media, desvioPadrao;
 
@@ -38,6 +41,18 @@ export default function ZScoreCalculator() {
       case 'aortaAscendente':
         media = -2.894 + 0.236 * ig;
         desvioPadrao = 0.085 + 0.013 * ig;
+        break;
+      case 'ventriculoDireito':
+        media = -3.145 + 0.352 * ig;
+        desvioPadrao = 0.110 + 0.018 * ig;
+        break;
+      case 'atrioEsquerdo':
+        media = -2.987 + 0.294 * ig;
+        desvioPadrao = 0.095 + 0.016 * ig;
+        break;
+      case 'atrioDireito':
+        media = -3.234 + 0.301 * ig;
+        desvioPadrao = 0.098 + 0.017 * ig;
         break;
       default:
         return null;
@@ -70,13 +85,11 @@ export default function ZScoreCalculator() {
   };
 
   const criarGrafico = (zScore) => {
-    // Verificar se o canvas existe
     if (!chartRef.current) {
       console.error('Canvas não encontrado');
       return;
     }
 
-    // Destruir gráfico anterior, se existir
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
     }
@@ -141,14 +154,12 @@ export default function ZScoreCalculator() {
     setResultado(resultado);
   };
 
-  // Criar gráfico após atualização do resultado
   useEffect(() => {
     if (resultado && !resultado.erro && chartRef.current) {
       criarGrafico(parseFloat(resultado.zScore));
     }
   }, [resultado]);
 
-  // Limpar gráfico ao desmontar ou mudar estrutura
   useEffect(() => {
     return () => {
       if (chartInstanceRef.current) {
@@ -180,6 +191,9 @@ export default function ZScoreCalculator() {
                 <option value="tricuspide">Válvula Tricúspide</option>
                 <option value="pulmonar">Válvula Pulmonar</option>
                 <option value="aortaAscendente">Aorta Ascendente</option>
+                <option value="ventriculoDireito">Ventrículo Direito</option>
+                <option value="atrioEsquerdo">Átrio Esquerdo</option>
+                <option value="atrioDireito">Átrio Direito</option>
               </select>
             </div>
 
@@ -197,14 +211,18 @@ export default function ZScoreCalculator() {
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">Idade Gestacional (semanas)</label>
-              <input
-                type="number"
-                step="0.1"
+              <select
                 value={idadeGestacional}
                 onChange={(e) => setIdadeGestacional(e.target.value)}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Ex.: 24"
-              />
+              >
+                <option value="" disabled>Selecione</option>
+                {idadesGestacionais.map((idade) => (
+                  <option key={idade} value={idade}>
+                    {idade} semanas
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="mb-4">
