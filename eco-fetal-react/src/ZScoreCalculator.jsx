@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import { Link } from 'react-router-dom';
+
 
 export default function ZScoreCalculator() {
   const [metrica, setMetrica] = useState('zScore');
@@ -695,9 +697,14 @@ export default function ZScoreCalculator() {
           </div>
         </div>
 
-        <p className="mt-6 text-sm text-gray-600 text-center">
-          Esta ferramenta é informativa e não substitui a avaliação de um médico. Baseado em Schneider et al. (2005) e Pasquini et al. (2007).
-        </p>
+        <div className="mt-6 text-sm text-gray-600 text-center space-y-2">
+  <p>Esta ferramenta é informativa e não substitui a avaliação de um médico. Baseado em Schneider et al. (2005) e Pasquini et al. (2007).</p>
+  <p>
+    <Link to="/biometria-fetal" className="text-blue-600 hover:underline">
+      Ir para Calculadora de Biometria Fetal
+    </Link>
+  </p>
+</div>
       </div>
     </div>
   );
